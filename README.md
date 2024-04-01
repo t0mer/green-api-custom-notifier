@@ -16,8 +16,12 @@
 Nevigate to [https://green-api.com/en](https://green-api.com/en) and register for a new account:
 ![Register](screenshots/register.png)
 
+Fill up your details and click on **Register**:
+![Create Account](screenshots/create_acoount.png)
 
 
+Next, click on the "Create an instance":
+![Create Instance](screenshots/create_instance.png)
 
 
 
