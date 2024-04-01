@@ -24,8 +24,16 @@ Next, click on the "Create an instance":
 ![Create Instance](screenshots/create_instance.png)
 
 
+Select the "Developer" instance (Free):
+![Developer Instance](screenshots/developer_instance.png)
 
 
+Copy the InstanceId and Token, we need it for the integration settings:
+![Instance Details](screenshots/instance_details.png)
+
+Next, Lets connect our whatsapp with green-api. On the left side, Under API --> Account, click on QR, and then click the "Send" button:
+
+![Link QR](screenshots/send_qr.png)
 
 
 ```yaml
