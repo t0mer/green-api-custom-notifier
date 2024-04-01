@@ -1,0 +1,7 @@
+notify:
+  description: "Send a whatsapp notification using Green API"
+  fields:
+    message:
+      description: The message to send
+      example: "Hello World"
+    
