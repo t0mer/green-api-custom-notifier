@@ -62,7 +62,7 @@ Write down the Id, you will need it to configure the notification.
 
 ### Setting up the notification in Home Assistant
 
-Download the [green-api-custom-notifier](https://github.com/t0mer/green-api-custom-notifier), place it under the **custom_components" folder.
+Download the [green-api-custom-notifier](https://github.com/t0mer/green-api-custom-notifier), place it under the **custom_components** folder.
 Restart Home Assistant and add the following section to your *configuration.yaml* file:
 
 
