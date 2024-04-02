@@ -41,7 +41,29 @@ Next, Scan the QR code to link you whatsapp with Green API:
 
 ![QR Code](screenshots/qr.png)
 
+After the account link, you will notice that the instance is active by the green light in the instance header:
+![Active Instance](screenshots/active_instance.png)
 
+
+
+### Getting the Contacts and Groups
+Before we can start messaging, we need to get the Contact/Group details. we can do it using Green API endpoint.
+On the lef side, Under API --> Service methods, click on "getContacts" and then click "Send":
+![Get Contacts](screenshots/get_contacts.png)
+
+As a result, you will get the list of Contacts and Groups.
+* The contact number ends with **@c.us**
+* The group number ends with **@g.us**
+
+![Contacts Lists](screenshots/contacts_list.png)
+
+Write down the Id, you will need it to configure the notification.
+
+
+### Setting up the notification in Home Assistant
+
+Download the [green-api-custom-notifier](https://github.com/t0mer/green-api-custom-notifier), place it under the **custom_components" folder.
+Restart Home Assistant and add the following section to your *configuration.yaml* file:
 
 
 ```yaml
@@ -52,3 +74,10 @@ notify:
     token:  #Set the greenapi token.
     target: #Comma separated values. Contact should end with @c.us and group with @g.us
 ```
+
+* instance_id is the Green API instance id.
+* token is the Green API instance token.
+* Target is the chat/contact/group id to send the message to:
+  * For groups, the id should end with *@g.us*
+  * For chats, the id should end with *@c.us*
+  * You can set up to 3 targets, separated with commas **123@g.us,456@c.us,789@g.us**. The message wil be sent to all.
