@@ -31,9 +31,17 @@ Select the "Developer" instance (Free):
 Copy the InstanceId and Token, we need it for the integration settings:
 ![Instance Details](screenshots/instance_details.png)
 
-Next, Lets connect our whatsapp with green-api. On the left side, Under API --> Account, click on QR, and then click the "Send" button:
+Next, Lets connect our whatsapp with green-api. On the left side, Under API --> Account, click on QR and copy the QR URL to the browser and click on "Scan QR code"
 
-![Link QR](screenshots/send_qr.png)
+![Send QR](screenshots/send_qr.png)
+
+![Scan QR](screenshots/scan_qr.png)
+
+Next, Scan the QR code to link you whatsapp with Green API:
+
+![QR Code](screenshots/qr.png)
+
+
 
 
 ```yaml
