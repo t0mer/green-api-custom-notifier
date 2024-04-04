@@ -82,9 +82,9 @@ notify:
 
 
 ## Sending a message
-To Send a message you call the service and provide the following paramaters:
+To Send a message you call the service and provide the following parameters:
 * message (**Required**): Test to send.
-* target (**Required**): Tha chat/group ir to send the message to.
+* target (**Required**): The chat/group id to send the message to.
 
 ![Send text message](screenshots/text_message.png)
 
@@ -114,4 +114,4 @@ data:
 ```
 
 # Important
-### If the path to the file does not exists no message will be sent.
+### If the path to the file does not exist no message will be sent.
