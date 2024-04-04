@@ -72,7 +72,6 @@ notify:
     name: greenapi
     instance_id:  #Set the instanceid
     token:  #Set the greenapi token.
-    target: #Comma separated values. Contact should end with @c.us and group with @g.us
 ```
 
 * instance_id is the Green API instance id.
@@ -80,4 +79,39 @@ notify:
 * Target is the chat/contact/group id to send the message to:
   * For groups, the id should end with *@g.us*
   * For chats, the id should end with *@c.us*
-  * You can set up to 3 targets, separated with commas **123@g.us,456@c.us,789@g.us**. The message wil be sent to all.
+
+
+## Sending a message
+To Send a message you call the service and provide the following paramaters:
+* message (**Required**): Test to send.
+* target (**Required**): Tha chat/group ir to send the message to.
+
+![Send text message](screenshots/text_message.png)
+
+Or from Yaml mode:
+```yaml
+service: notify.greenapi
+data:
+  message: New Whatsapp component
+  target: 972*********@c.us
+```
+
+### Optional - Attache media to message
+To send message with media, add the following to the data parameter:
+* file : [Path to the file]
+
+![Send media](screenshots/send_media.png)
+
+Or from Yaml mode:
+```yaml
+service: notify.greenapi
+data:
+  message: New Whatsapp component
+  target: 972*********@c.us
+  data:
+    file: /config/images/Capture.png
+
+```
+
+# Important
+### If the path to the file does not exists no message will be sent.
