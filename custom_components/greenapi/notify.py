@@ -43,6 +43,10 @@ class GreenAPINotificationService(BaseNotificationService):
         """Send a message to the target."""
         
         try:
+            title = kwargs.get(ATTR_TITLE)
+            if title is not None:
+                title = f"*{title}*"
+                message = f"{title} \n {message}"
             data = kwargs.get(ATTR_DATA)
             target = kwargs.get(ATTR_TARGET)[0]
             _LOGGER.info(f"Sending message to {target}")
