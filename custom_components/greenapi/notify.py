@@ -16,7 +16,7 @@ ATTR_TOKEN = "token"
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
-    # vol.Required(ATTR_TARGET): cv.string,
+    vol.Optional(ATTR_TARGET): cv.string,
     vol.Required(ATTR_INSTANCE): cv.string,
     vol.Required(ATTR_TOKEN): cv.string,
     vol.Optional(ATTR_TITLE): cv.string,
@@ -27,15 +27,17 @@ def get_service(hass, config, discovery_info=None):
     title = config.get(ATTR_TITLE)
     token = config.get(ATTR_TOKEN)
     instance_id = config.get(ATTR_INSTANCE)
-    return GreenAPINotificationService(title, token, instance_id)
+    target = config.get(ATTR_TARGET)
+    return GreenAPINotificationService(title, token, instance_id, target)
 
 class GreenAPINotificationService(BaseNotificationService):
     
-    def __init__(self, title, token,instance_id):
+    def __init__(self, title, token,instance_id, target):
         """Initialize the service."""
         self._title = title
         self._token = token
         self._instance_id = instance_id
+        self._target = target
         self._greenAPI = API.GreenAPI(self._instance_id, self._token)
 
     def send_message(self, message="", **kwargs):
@@ -48,7 +50,7 @@ class GreenAPINotificationService(BaseNotificationService):
                 title = f"*{title}*"
                 message = f"{title} \n {message}"
             data = kwargs.get(ATTR_DATA)
-            target = kwargs.get(ATTR_TARGET)[0]
+            target = kwargs.get(ATTR_TARGET)[0] if kwargs.get(ATTR_TARGET) is not None else self._target #Allow setting the target from either the service-call or the service config. Service call target can override the default config.
             _LOGGER.info(f"Sending message to {target}")
             if data is not None:
                 file_path = data["file"]

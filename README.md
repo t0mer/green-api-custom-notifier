@@ -76,15 +76,26 @@ notify:
 
 * instance_id is the Green API instance id.
 * token is the Green API instance token.
-* Target is the chat/contact/group id to send the message to:
+* target is the chat/contact/group id to send the message to:
   * For groups, the id should end with *@g.us*
   * For chats, the id should end with *@c.us*
+
+You can also set the default target in your notify service configuration, so that you don't have to specify it every time you call the service.
+Example:
+```yaml
+notify:
+  - platform: greenapi
+    name: me
+    instance_id:  #Set the instanceid
+    token:  #Set the greenapi token.
+    target:  #Set the default target.
+```
 
 
 ## Sending a message
 To Send a message you call the service and provide the following parameters:
 * message (**Required**): Test to send.
-* target (**Required**): The chat/group id to send the message to.
+* target (**OPTIONAL** if you've already defined the default target in your notify service, otherwise required): The chat/group id to send the message to.
 
 ![Send text message](screenshots/text_message.png)
 
@@ -96,7 +107,7 @@ data:
   target: 972*********@c.us
 ```
 
-### Optional - Attache media to message
+### Optional - Attach media to message
 To send message with media, add the following to the data parameter:
 * file : [Path to the file]
 
