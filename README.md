@@ -70,13 +70,14 @@ Restart Home Assistant and add the following section to your *configuration.yaml
 notify:
   - platform: greenapi
     name: greenapi
-    instance_id:  #Set the instanceid
-    token:  #Set the greenapi token.
+    instance_id:  #REQUIRED: Set the instanceid
+    token:  #REQUIRED: Set the greenapi token.
+    target:  #OPTIONAL! Set the detault target. If you set the default target here, you won't have to specify it again in your service calls.
 ```
 
 * instance_id is the Green API instance id.
 * token is the Green API instance token.
-* Target is the chat/contact/group id to send the message to:
+* target is the chat/contact/group id to send the message to:
   * For groups, the id should end with *@g.us*
   * For chats, the id should end with *@c.us*
 
@@ -84,7 +85,8 @@ notify:
 ## Sending a message
 To Send a message you call the service and provide the following parameters:
 * message (**Required**): Test to send.
-* target (**Required**): The chat/group id to send the message to.
+* title (**OPTIONAL**): Add a title for the message in **bold**.
+* target (**OPTIONAL** if you've already defined the default target in your notify service, otherwise required): The chat/group id to send the message to.
 
 ![Send text message](screenshots/text_message.png)
 
@@ -96,7 +98,7 @@ data:
   target: 972*********@c.us
 ```
 
-### Optional - Attache media to message
+### Optional - Attach media to message
 To send message with media, add the following to the data parameter:
 * file : [Path to the file]
 
