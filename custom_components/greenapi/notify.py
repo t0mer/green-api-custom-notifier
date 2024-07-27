@@ -58,7 +58,7 @@ class GreenAPINotificationService(BaseNotificationService):
                     if os.path.exists(file_path):
                         upload_file_response = self._greenAPI.sending.uploadFile(file_path)
                         if upload_file_response.code != 200:
-                            raise Exception(upload_file_response.code, "Failed to upload file: %s", file_path)
+                            raise Exception(upload_file_response.code, "Failed to upload file: " + file_path)
                         url_file = upload_file_response.data["urlFile"]
                         url = urlparse(url_file)
                         file_name = basename(url.path)
