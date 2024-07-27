@@ -53,15 +53,19 @@ class GreenAPINotificationService(BaseNotificationService):
             target = kwargs.get(ATTR_TARGET)[0] if kwargs.get(ATTR_TARGET) is not None else self._target #Allow setting the target from either the service-call or the service config. Service call target can override the default config.
             _LOGGER.info(f"Sending message to {target}")
             if data is not None:
-                file_path = data["file"]
-                if os.path.exists(file_path):
-                    upload_file_response = self._greenAPI.sending.uploadFile(file_path)
-                    if upload_file_response.code == 200:
+                file_path = data.get("file")
+                if file_path is not None:
+                    if os.path.exists(file_path):
+                        upload_file_response = self._greenAPI.sending.uploadFile(file_path)
+                        if upload_file_response.code != 200:
+                            raise Exception(upload_file_response.code, "Failed to upload file: %s", file_path)
                         url_file = upload_file_response.data["urlFile"]
                         url = urlparse(url_file)
                         file_name = basename(url.path)
                         send_file_by_url_response = self._greenAPI.sending.sendFileByUrl(target, url_file, file_name, caption=message)
-            else:
-                self._greenAPI.sending.sendMessage(target, message)
+                        return
+                    else:
+                        _LOGGER.warn("Sending message to %s: excluding the file '%s' that was not found", kwargs.get(ATTR_TARGET)[0], file_path)
+            self._greenAPI.sending.sendMessage(target, message)
         except Exception as e:
-            _LOGGER.error("Sending message to %s: has failed with the following error %s", kwargs.get(ATTR_TARGET)[0] ,str(e))
+            _LOGGER.error("Sending message to %s: has failed with the following error %s", kwargs.get(ATTR_TARGET)[0], str(e))
