@@ -32,7 +32,7 @@ def get_service(hass, config, discovery_info=None):
 
 class GreenAPINotificationService(BaseNotificationService):
     
-    def __init__(self, title, token,instance_id, target):
+    def __init__(self, title, token, instance_id, target):
         """Initialize the service."""
         self._title = title
         self._token = token
@@ -48,7 +48,7 @@ class GreenAPINotificationService(BaseNotificationService):
             title = kwargs.get(ATTR_TITLE)
             if title is not None:
                 title = f"*{title}*"
-                message = f"{title} \n {message}"
+                message = f"{title}\n{message}"
             data = kwargs.get(ATTR_DATA)
             target = kwargs.get(ATTR_TARGET)[0] if kwargs.get(ATTR_TARGET) is not None else self._target #Allow setting the target from either the service-call or the service config. Service call target can override the default config.
             _LOGGER.info(f"Sending message to {target}")
