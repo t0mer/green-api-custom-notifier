@@ -116,4 +116,4 @@ data:
 ```
 
 # Important
-### If the path to the file does not exist no message will be sent.
+### If the path to the file does not exist, the message will still be sent; but will log a warning.
