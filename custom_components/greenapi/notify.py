@@ -32,7 +32,7 @@ def get_service(hass, config, discovery_info=None):
 
 class GreenAPINotificationService(BaseNotificationService):
     
-    def __init__(self, title, token,instance_id, target):
+    def __init__(self, title, token,instance_id, target, linkPreview=False):
         """Initialize the service."""
         self._title = title
         self._token = token
