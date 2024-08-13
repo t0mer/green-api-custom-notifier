@@ -48,7 +48,7 @@ class GreenAPINotificationService(BaseNotificationService):
             title = kwargs.get(ATTR_TITLE)
             if title is not None:
                 title = f"*{title}*"
-                message = f"{title} \n {message}"
+                message = f"{title}\n{message}"
             data = kwargs.get(ATTR_DATA)
             target = kwargs.get(ATTR_TARGET)[0] if kwargs.get(ATTR_TARGET) is not None else self._target #Allow setting the target from either the service-call or the service config. Service call target can override the default config.
             _LOGGER.info(f"Sending message to {target}")
@@ -66,6 +66,7 @@ class GreenAPINotificationService(BaseNotificationService):
                         return
                     else:
                         _LOGGER.warn("Sending message to %s: excluding the file '%s' that was not found", kwargs.get(ATTR_TARGET)[0], file_path)
-            self._greenAPI.sending.sendMessage(target, message)
+            self._greenAPI.sending.sendMessage(target, message, linkPreview=False)
         except Exception as e:
             _LOGGER.error("Sending message to %s: has failed with the following error %s", kwargs.get(ATTR_TARGET)[0], str(e))
+
