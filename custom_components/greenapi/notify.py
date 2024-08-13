@@ -32,7 +32,7 @@ def get_service(hass, config, discovery_info=None):
 
 class GreenAPINotificationService(BaseNotificationService):
     
-    def __init__(self, title, token,instance_id, target, linkPreview=False):
+    def __init__(self, title, token,instance_id, target):
         """Initialize the service."""
         self._title = title
         self._token = token
@@ -62,6 +62,6 @@ class GreenAPINotificationService(BaseNotificationService):
                         file_name = basename(url.path)
                         send_file_by_url_response = self._greenAPI.sending.sendFileByUrl(target, url_file, file_name, caption=message)
             else:
-                self._greenAPI.sending.sendMessage(target, message)
+                self._greenAPI.sending.sendMessage(target, message, linkPreview=False)
         except Exception as e:
             _LOGGER.error("Sending message to %s: has failed with the following error %s", kwargs.get(ATTR_TARGET)[0] ,str(e))
