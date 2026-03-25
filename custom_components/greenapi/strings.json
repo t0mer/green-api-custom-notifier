@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "GreenAPI WhatsApp Notifier",
+        "description": "Enter your [Green API](https://green-api.com/en) credentials. You can find these in your Green API dashboard.",
+        "data": {
+          "name": "Service Name",
+          "instance_id": "Instance ID",
+          "token": "Access Token"
+        },
+        "data_description": {
+          "name": "A friendly name for this account. The service will be registered as notify.greenapi_<name>. E.g. 'home' becomes notify.greenapi_home.",
+          "instance_id": "The Instance ID from your Green API dashboard.",
+          "token": "The API token from your Green API dashboard."
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This Green API instance is already configured."
+    }
+  }
+}

@@ -1,9 +1,8 @@
 # green-api-custom-notifier
 
-[green-api](https://green-api.com/en) is a service that allows us to send and receive text, photo and video using stable WhatsApp API gateway. The service includes free account that can be used to send notifications to 3 chats (Group or Private) and many more.
+[green-api](https://green-api.com/en) is a service that allows us to send and receive text, photo and video using stable WhatsApp API gateway. The service includes a free account that can be used to send notifications to 3 chats (Group or Private) and many more.
 
-
-[green-api-custom-notifier](https://github.com/t0mer/green-api-custom-notifier) is a [Homeassistant ](https://www.home-assistant.io/) custom notification component that enables us to send notification to Whatsapp groups using [green-api](https://green-api.com/en).
+[green-api-custom-notifier](https://github.com/t0mer/green-api-custom-notifier) is a [Home Assistant](https://www.home-assistant.io/) custom notification component that enables sending notifications to WhatsApp groups and contacts using [green-api](https://green-api.com/en).
 
 
 ## Limitations
@@ -13,7 +12,7 @@
 ## Getting started
 
 ### Setup Green API account
-Nevigate to [https://green-api.com/en](https://green-api.com/en) and register for a new account:
+Navigate to [https://green-api.com/en](https://green-api.com/en) and register for a new account:
 ![Register](screenshots/register.png)
 
 Fill up your details and click on **Register**:
@@ -28,92 +27,100 @@ Select the "Developer" instance (Free):
 ![Developer Instance](screenshots/developer_instance.png)
 
 
-Copy the InstanceId and Token, we need it for the integration settings:
+Copy the InstanceId and Token — you will need these during integration setup:
 ![Instance Details](screenshots/instance_details.png)
 
-Next, Lets connect our whatsapp with green-api. On the left side, Under API --> Account, click on QR and copy the QR URL to the browser and click on "Scan QR code"
+Next, connect your WhatsApp with Green API. On the left side, under API → Account, click on QR and copy the QR URL to the browser and click on "Scan QR code":
 
 ![Send QR](screenshots/send_qr.png)
 
 ![Scan QR](screenshots/scan_qr.png)
 
-Next, Scan the QR code to link you whatsapp with Green API:
+Scan the QR code to link your WhatsApp with Green API:
 
 ![QR Code](screenshots/qr.png)
 
-After the account link, you will notice that the instance is active by the green light in the instance header:
+After linking, the instance will show as active with a green light in the instance header:
 ![Active Instance](screenshots/active_instance.png)
 
 
-
-### Getting the Contacts and Groups
-Before we can start messaging, we need to get the Contact/Group details. we can do it using Green API endpoint.
-On the lef side, Under API --> Service methods, click on "getContacts" and then click "Send":
+### Getting Contacts and Groups
+Before messaging, get the Contact/Group IDs via the Green API endpoint.
+On the left side, under API → Service methods, click on "getContacts" and then click "Send":
 ![Get Contacts](screenshots/get_contacts.png)
 
-As a result, you will get the list of Contacts and Groups.
-* The contact number ends with **@c.us**
-* The group number ends with **@g.us**
+You will get a list of contacts and groups:
+* Contact numbers end with **@c.us**
+* Group numbers end with **@g.us**
 
 ![Contacts Lists](screenshots/contacts_list.png)
 
-Write down the Id, you will need it to configure the notification.
+Note the ID — you will need it when sending notifications.
 
 
-### Setting up the notification in Home Assistant
+### Installing the integration
 
-Download the [green-api-custom-notifier](https://github.com/t0mer/green-api-custom-notifier), place it under the **custom_components** folder.
-Restart Home Assistant and add the following section to your *configuration.yaml* file:
+Download the [green-api-custom-notifier](https://github.com/t0mer/green-api-custom-notifier) and place the `greenapi` folder under your `custom_components` directory. Restart Home Assistant.
 
+### Configuring via UI
 
-```yaml
-notify:
-  - platform: greenapi
-    name: greenapi
-    instance_id:  #REQUIRED: Set the instanceid
-    token:  #REQUIRED: Set the greenapi token.
-    target:  #OPTIONAL! Set the detault target. If you set the default target here, you won't have to specify it again in your service calls.
-```
+Go to **Settings → Integrations → Add Integration** and search for **GreenAPI**. Fill in the three fields:
 
-* instance_id is the Green API instance id.
-* token is the Green API instance token.
-* target is the chat/contact/group id to send the message to:
-  * For groups, the id should end with *@g.us*
-  * For chats, the id should end with *@c.us*
+| Field | Description |
+|-------|-------------|
+| **Service Name** | A short friendly name (e.g. `home`). The notify service will be registered as `notify.greenapi_<name>`. |
+| **Instance ID** | Your Green API Instance ID. |
+| **Access Token** | Your Green API token. |
+
+You can add multiple instances (e.g. for different WhatsApp accounts) — each gets its own uniquely named service.
 
 
 ## Sending a message
-To Send a message you call the service and provide the following parameters:
-* message (**Required**): Test to send.
-* title (**OPTIONAL**): Add a title for the message in **bold**.
-* target (**OPTIONAL** if you've already defined the default target in your notify service, otherwise required): The chat/group id to send the message to.
 
-![Send text message](screenshots/text_message.png)
+Call the service with the following parameters:
 
-Or from Yaml mode:
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `message` | Yes | Text to send. |
+| `title` | No | Prepended to the message in **bold**. |
+| `target` | Yes | The WhatsApp chat/group ID to send to. |
+
 ```yaml
-service: notify.greenapi
+action: notify.greenapi_home
 data:
-  message: New Whatsapp component
-  target: 972*********@c.us
+  message: Hello from Home Assistant
+  target: 972XXXXXXXXX@c.us
 ```
 
-### Optional - Attach media to message
-To send message with media, add the following to the data parameter:
-* file : [Path to the file]
-
-![Send media](screenshots/send_media.png)
-
-Or from Yaml mode:
+With a title:
 ```yaml
-service: notify.greenapi
+action: notify.greenapi_home
 data:
-  message: New Whatsapp component
-  target: 972*********@c.us
+  message: Motion detected in the garden
+  title: Security Alert
+  target: 972XXXXXXXXX@c.us
+```
+
+For groups, the target ID ends with `@g.us`:
+```yaml
+action: notify.greenapi_home
+data:
+  message: Dinner is ready!
+  target: 120363XXXXXXXXX@g.us
+```
+
+
+### Optional — Attach media to message
+
+Add a `file` key inside the `data` field to attach a local file:
+
+```yaml
+action: notify.greenapi_home
+data:
+  message: Here is your image
+  target: 972XXXXXXXXX@c.us
   data:
     file: /config/images/Capture.png
-
 ```
 
-#### Important
-If the path to the file does not exist, the message will still be sent; but will log a warning.
+> **Note:** If the file path does not exist, the message is still sent as text and a warning is logged.
