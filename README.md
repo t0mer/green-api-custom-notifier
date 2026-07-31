@@ -14,48 +14,48 @@
 
 ### Setup Green API account
 Nevigate to [https://green-api.com/en](https://green-api.com/en) and register for a new account:
-![Register](screenshots/register.png)
+![Register](https://raw.githubusercontent.com/t0mer/green-api-custom-notifier/main/screenshots/register.png)
 
 Fill up your details and click on **Register**:
-![Create Account](screenshots/create_acoount.png)
+![Create Account](https://raw.githubusercontent.com/t0mer/green-api-custom-notifier/main/screenshots/create_acoount.png)
 
 
 Next, click on the "Create an instance":
-![Create Instance](screenshots/create_instance.png)
+![Create Instance](https://raw.githubusercontent.com/t0mer/green-api-custom-notifier/main/screenshots/create_instance.png)
 
 
 Select the "Developer" instance (Free):
-![Developer Instance](screenshots/developer_instance.png)
+![Developer Instance](https://raw.githubusercontent.com/t0mer/green-api-custom-notifier/main/screenshots/developer_instance.png)
 
 
 Copy the InstanceId and Token, we need it for the integration settings:
-![Instance Details](screenshots/instance_details.png)
+![Instance Details](https://raw.githubusercontent.com/t0mer/green-api-custom-notifier/main/screenshots/instance_details.png)
 
 Next, Lets connect our whatsapp with green-api. On the left side, Under API --> Account, click on QR and copy the QR URL to the browser and click on "Scan QR code"
 
-![Send QR](screenshots/send_qr.png)
+![Send QR](https://raw.githubusercontent.com/t0mer/green-api-custom-notifier/main/screenshots/send_qr.png)
 
-![Scan QR](screenshots/scan_qr.png)
+![Scan QR](https://raw.githubusercontent.com/t0mer/green-api-custom-notifier/main/screenshots/scan_qr.png)
 
 Next, Scan the QR code to link you whatsapp with Green API:
 
-![QR Code](screenshots/qr.png)
+![QR Code](https://raw.githubusercontent.com/t0mer/green-api-custom-notifier/main/screenshots/qr.png)
 
 After the account link, you will notice that the instance is active by the green light in the instance header:
-![Active Instance](screenshots/active_instance.png)
+![Active Instance](https://raw.githubusercontent.com/t0mer/green-api-custom-notifier/main/screenshots/active_instance.png)
 
 
 
 ### Getting the Contacts and Groups
 Before we can start messaging, we need to get the Contact/Group details. we can do it using Green API endpoint.
 On the lef side, Under API --> Service methods, click on "getContacts" and then click "Send":
-![Get Contacts](screenshots/get_contacts.png)
+![Get Contacts](https://raw.githubusercontent.com/t0mer/green-api-custom-notifier/main/screenshots/get_contacts.png)
 
 As a result, you will get the list of Contacts and Groups.
 * The contact number ends with **@c.us**
 * The group number ends with **@g.us**
 
-![Contacts Lists](screenshots/contacts_list.png)
+![Contacts Lists](https://raw.githubusercontent.com/t0mer/green-api-custom-notifier/main/screenshots/contacts_list.png)
 
 Write down the Id, you will need it to configure the notification.
 
@@ -88,7 +88,7 @@ To Send a message you call the service and provide the following parameters:
 * title (**OPTIONAL**): Add a title for the message in **bold**.
 * target (**OPTIONAL** if you've already defined the default target in your notify service, otherwise required): The chat/group id to send the message to.
 
-![Send text message](screenshots/text_message.png)
+![Send text message](https://raw.githubusercontent.com/t0mer/green-api-custom-notifier/main/screenshots/text_message.png)
 
 Or from Yaml mode:
 ```yaml
@@ -102,7 +102,7 @@ data:
 To send message with media, add the following to the data parameter:
 * file : [Path to the file]
 
-![Send media](screenshots/send_media.png)
+![Send media](https://raw.githubusercontent.com/t0mer/green-api-custom-notifier/main/screenshots/send_media.png)
 
 Or from Yaml mode:
 ```yaml
