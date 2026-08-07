@@ -1,6 +1,6 @@
 {
     "domain": "greenapi",
-    "name": "Whatsapp notifier basde on Green API",
+    "name": "Whatsapp notifier based on Green API",
     "codeowners": [
     "@t0mer"
     ],
