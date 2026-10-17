@@ -38,7 +38,14 @@ class GreenAPINotificationService(BaseNotificationService):
         self._token = token
         self._instance_id = instance_id
         self._target = target
-        self._greenAPI = API.GreenAPI(self._instance_id, self._token)
+        # Green-API instances use instance-specific API and media hosts.
+        prefix = str(self._instance_id)[:4]
+        self._greenAPI = API.GreenAPI(
+            self._instance_id,
+            self._token,
+            host=f"https://{prefix}.api.greenapi.com",
+            media=f"https://{prefix}.media.greenapi.com",
+        )
 
     def send_message(self, message="", **kwargs):
         
