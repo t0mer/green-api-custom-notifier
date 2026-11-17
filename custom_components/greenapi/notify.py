@@ -119,6 +119,9 @@ class GreenAPINotificationService(BaseNotificationService):
         Returns False when the file can't be found, so the text is sent alone.
         """
         if urlparse(file).scheme in ("http", "https"):
+            if self.hass is None or not self.hass.config.is_allowed_external_url(file):
+                raise ValueError(
+                    f"URL '{file}' is not allowed; add it to allowlist_external_urls in the homeassistant configuration")
             with tempfile.TemporaryDirectory() as tmp_dir:
                 self._upload_and_send(target, _download(file, tmp_dir), caption)
             return True
@@ -152,8 +155,10 @@ def _check(response, action):
 
 def _download(url, tmp_dir):
     """Download url into tmp_dir and return the local path."""
-    response = requests.get(url, timeout=DOWNLOAD_TIMEOUT)
-    response.raise_for_status()
+    # No redirects: they could lead outside allowlist_external_urls.
+    response = requests.get(url, timeout=DOWNLOAD_TIMEOUT, allow_redirects=False)
+    if response.status_code != 200:
+        raise RuntimeError(f"downloading {url} failed: HTTP {response.status_code}")
     name = basename(unquote(urlparse(url).path)) or "file"
     if not os.path.splitext(name)[1]:
         content_type = response.headers.get("Content-Type", "").split(";")[0].strip()
