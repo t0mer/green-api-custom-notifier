@@ -1,7 +1,11 @@
 import logging
+import mimetypes
 import os
+import tempfile
 from os.path import basename
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
+
+import requests
 import voluptuous as vol
 from whatsapp_api_client_python import API
 import homeassistant.helpers.config_validation as cv
@@ -12,12 +16,15 @@ ATTR_INSTANCE = "instance_id"
 ATTR_TOKEN = "token"
 ATTR_API_URL = "api_url"
 ATTR_MEDIA_URL = "media_url"
+ATTR_FILE = "file"
+ATTR_LINK_PREVIEW = "link_preview"
 
 # Instances with this prefix live on the original cluster, which has no
 # instance-specific hostname.
 LEGACY_PREFIX = "1101"
 DEFAULT_API_URL = "https://api.green-api.com"
 DEFAULT_MEDIA_URL = "https://media.green-api.com"
+DOWNLOAD_TIMEOUT = 30
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -77,32 +84,81 @@ class GreenAPINotificationService(BaseNotificationService):
         self._greenAPI = API.GreenAPI(instance_id, token, host=api_url, media=media_url)
 
     def send_message(self, message="", **kwargs):
-        
-        """Send a message to the target."""
-        
-        try:
-            title = kwargs.get(ATTR_TITLE)
-            if title is not None:
-                title = f"*{title}*"
-                message = f"{title}\n{message}"
-            data = kwargs.get(ATTR_DATA)
-            target = kwargs.get(ATTR_TARGET)[0] if kwargs.get(ATTR_TARGET) is not None else self._target #Allow setting the target from either the service-call or the service config. Service call target can override the default config.
-            _LOGGER.info(f"Sending message to {target}")
-            if data is not None:
-                file_path = data.get("file")
-                if file_path is not None:
-                    if os.path.exists(file_path):
-                        upload_file_response = self._greenAPI.sending.uploadFile(file_path)
-                        if upload_file_response.code != 200:
-                            raise Exception(upload_file_response.code, "Failed to upload file: " + file_path)
-                        url_file = upload_file_response.data["urlFile"]
-                        url = urlparse(url_file)
-                        file_name = basename(url.path)
-                        send_file_by_url_response = self._greenAPI.sending.sendFileByUrl(target, url_file, file_name, caption=message)
-                        return
-                    else:
-                        _LOGGER.warn("Sending message to %s: excluding the file '%s' that was not found", kwargs.get(ATTR_TARGET)[0], file_path)
-            self._greenAPI.sending.sendMessage(target, message, linkPreview=False)
-        except Exception as e:
-            _LOGGER.error("Sending message to %s: has failed with the following error %s", kwargs.get(ATTR_TARGET)[0], str(e))
+        """Send a message to every target."""
+        # Allow literal "\n" (as typed in the UI or single-quoted YAML) as a line break.
+        message = (message or "").replace("\\n", "\n")
+        title = kwargs.get(ATTR_TITLE)
+        if title:
+            message = f"*{title}*\n{message}"
+        data = kwargs.get(ATTR_DATA) or {}
+        # A target in the service call overrides the default from the configuration.
+        targets = kwargs.get(ATTR_TARGET) or ([self._target] if self._target else [])
+        if not targets:
+            _LOGGER.error("No target given and no default target configured")
+            return
 
+        for target in targets:
+            try:
+                self._send(target, message, data)
+            except Exception as err:  # never let one target break the others
+                _LOGGER.error("Sending message to %s failed: %s", target, err)
+
+    def _send(self, target, message, data):
+        _LOGGER.info("Sending message to %s", target)
+        file = data.get(ATTR_FILE)
+        if file:
+            if self._send_file(target, file, message):
+                return
+        response = self._greenAPI.sending.sendMessage(
+            target, message, linkPreview=bool(data.get(ATTR_LINK_PREVIEW, False)))
+        _check(response, "sendMessage")
+
+    def _send_file(self, target, file, caption):
+        """Send a local file or a file downloaded from an http(s) URL.
+
+        Returns False when the file can't be found, so the text is sent alone.
+        """
+        if urlparse(file).scheme in ("http", "https"):
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                self._upload_and_send(target, _download(file, tmp_dir), caption)
+            return True
+
+        path = self._local_path(file)
+        if not os.path.isfile(path):
+            _LOGGER.warning("Sending message to %s without the file '%s': file not found", target, path)
+            return False
+        self._upload_and_send(target, path, caption)
+        return True
+
+    def _local_path(self, file):
+        # "/local/..." is how the frontend addresses <config>/www.
+        if file.startswith("/local/") and self.hass is not None:
+            return self.hass.config.path("www", file[len("/local/"):])
+        return file
+
+    def _upload_and_send(self, target, path, caption):
+        upload = self._greenAPI.sending.uploadFile(path)
+        _check(upload, f"uploadFile ({path})")
+        url_file = upload.data["urlFile"]
+        file_name = basename(urlparse(url_file).path)
+        response = self._greenAPI.sending.sendFileByUrl(target, url_file, file_name, caption=caption)
+        _check(response, "sendFileByUrl")
+
+
+def _check(response, action):
+    if response.code != 200:
+        raise RuntimeError(f"{action} failed: {response.code} {response.error or response.data}")
+
+
+def _download(url, tmp_dir):
+    """Download url into tmp_dir and return the local path."""
+    response = requests.get(url, timeout=DOWNLOAD_TIMEOUT)
+    response.raise_for_status()
+    name = basename(unquote(urlparse(url).path)) or "file"
+    if not os.path.splitext(name)[1]:
+        content_type = response.headers.get("Content-Type", "").split(";")[0].strip()
+        name += mimetypes.guess_extension(content_type) or ""
+    path = os.path.join(tmp_dir, name)
+    with open(path, "wb") as fh:
+        fh.write(response.content)
+    return path
