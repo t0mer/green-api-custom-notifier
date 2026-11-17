@@ -1,5 +1,4 @@
 import logging
-import json
 import os
 from os.path import basename
 from urllib.parse import urlparse
@@ -11,7 +10,14 @@ from homeassistant.components.notify import (
 
 ATTR_INSTANCE = "instance_id"
 ATTR_TOKEN = "token"
+ATTR_API_URL = "api_url"
+ATTR_MEDIA_URL = "media_url"
 
+# Instances with this prefix live on the original cluster, which has no
+# instance-specific hostname.
+LEGACY_PREFIX = "1101"
+DEFAULT_API_URL = "https://api.green-api.com"
+DEFAULT_MEDIA_URL = "https://media.green-api.com"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -20,32 +26,55 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(ATTR_INSTANCE): cv.string,
     vol.Required(ATTR_TOKEN): cv.string,
     vol.Optional(ATTR_TITLE): cv.string,
+    vol.Optional(ATTR_API_URL): cv.url,
+    vol.Optional(ATTR_MEDIA_URL): cv.url,
 })
+
+
+def resolve_hosts(instance_id, api_url=None, media_url=None):
+    """Return the (api, media) hosts for an instance.
+
+    Explicit URLs win. Otherwise the instance-specific hosts are derived from
+    the first four digits of the instance ID, e.g. 7105 ->
+    https://7105.api.greenapi.com and https://7105.media.greenapi.com.
+    """
+    prefix = str(instance_id)[:4]
+    if prefix == LEGACY_PREFIX:
+        default_api, default_media = DEFAULT_API_URL, DEFAULT_MEDIA_URL
+    else:
+        default_api = f"https://{prefix}.api.greenapi.com"
+        default_media = f"https://{prefix}.media.greenapi.com"
+    api = (api_url or default_api).rstrip("/")
+    if media_url:
+        media = media_url.rstrip("/")
+    elif api_url:
+        media = api.replace(".api.", ".media.", 1) if ".api." in api else default_media
+    else:
+        media = default_media
+    return api, media
+
 
 def get_service(hass, config, discovery_info=None):
     """Get the custom notifier service."""
-    title = config.get(ATTR_TITLE)
-    token = config.get(ATTR_TOKEN)
-    instance_id = config.get(ATTR_INSTANCE)
-    target = config.get(ATTR_TARGET)
-    return GreenAPINotificationService(title, token, instance_id, target)
+    api_url, media_url = resolve_hosts(
+        config[ATTR_INSTANCE], config.get(ATTR_API_URL), config.get(ATTR_MEDIA_URL))
+    return GreenAPINotificationService(
+        config.get(ATTR_TITLE),
+        config[ATTR_TOKEN],
+        config[ATTR_INSTANCE],
+        config.get(ATTR_TARGET),
+        api_url,
+        media_url,
+    )
+
 
 class GreenAPINotificationService(BaseNotificationService):
-    
-    def __init__(self, title, token, instance_id, target):
+
+    def __init__(self, title, token, instance_id, target, api_url, media_url):
         """Initialize the service."""
         self._title = title
-        self._token = token
-        self._instance_id = instance_id
         self._target = target
-        # Green-API instances use instance-specific API and media hosts.
-        prefix = str(self._instance_id)[:4]
-        self._greenAPI = API.GreenAPI(
-            self._instance_id,
-            self._token,
-            host=f"https://{prefix}.api.greenapi.com",
-            media=f"https://{prefix}.media.greenapi.com",
-        )
+        self._greenAPI = API.GreenAPI(instance_id, token, host=api_url, media=media_url)
 
     def send_message(self, message="", **kwargs):
         
