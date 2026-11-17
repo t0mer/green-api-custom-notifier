@@ -1,0 +1,13 @@
+CLAUDE.md
+.claude/
+.cursor/
+.aider*
+/docs/
+docs/*
+*.design.md
+*.implementation.md
+scans/
+
+# Python
+__pycache__/
+*.py[cod]
