@@ -25,6 +25,8 @@ LEGACY_PREFIX = "1101"
 DEFAULT_API_URL = "https://api.green-api.com"
 DEFAULT_MEDIA_URL = "https://media.green-api.com"
 DOWNLOAD_TIMEOUT = 30
+# Green-API accepts files up to 100 MB.
+MAX_DOWNLOAD_BYTES = 100 * 1024 * 1024
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -55,10 +57,20 @@ def resolve_hosts(instance_id, api_url=None, media_url=None):
     if media_url:
         media = media_url.rstrip("/")
     elif api_url:
-        media = api.replace(".api.", ".media.", 1) if ".api." in api else default_media
+        media = _media_from_api(api) or default_media
     else:
         media = default_media
     return api, media
+
+
+def _media_from_api(api):
+    """https://7105.api.greenapi.com -> https://7105.media.greenapi.com"""
+    parsed = urlparse(api)
+    labels = parsed.netloc.split(".")
+    if "api" not in labels:
+        return None
+    labels[labels.index("api")] = "media"
+    return parsed._replace(netloc=".".join(labels)).geturl()
 
 
 def get_service(hass, config, discovery_info=None):
@@ -110,7 +122,7 @@ class GreenAPINotificationService(BaseNotificationService):
             if self._send_file(target, file, message):
                 return
         response = self._greenAPI.sending.sendMessage(
-            target, message, linkPreview=bool(data.get(ATTR_LINK_PREVIEW, False)))
+            target, message, linkPreview=cv.boolean(data.get(ATTR_LINK_PREVIEW, False)))
         _check(response, "sendMessage")
 
     def _send_file(self, target, file, caption):
@@ -156,14 +168,19 @@ def _check(response, action):
 def _download(url, tmp_dir):
     """Download url into tmp_dir and return the local path."""
     # No redirects: they could lead outside allowlist_external_urls.
-    response = requests.get(url, timeout=DOWNLOAD_TIMEOUT, allow_redirects=False)
-    if response.status_code != 200:
-        raise RuntimeError(f"downloading {url} failed: HTTP {response.status_code}")
+    with requests.get(url, timeout=DOWNLOAD_TIMEOUT, allow_redirects=False, stream=True) as response:
+        if response.status_code != 200:
+            raise RuntimeError(f"downloading {url} failed: HTTP {response.status_code}")
+        content = bytearray()
+        for chunk in response.iter_content(chunk_size=65536):
+            content += chunk
+            if len(content) > MAX_DOWNLOAD_BYTES:
+                raise RuntimeError(f"downloading {url} failed: larger than {MAX_DOWNLOAD_BYTES} bytes")
+        content_type = response.headers.get("Content-Type", "")
     name = basename(unquote(urlparse(url).path)) or "file"
     if not os.path.splitext(name)[1]:
-        content_type = response.headers.get("Content-Type", "").split(";")[0].strip()
-        name += mimetypes.guess_extension(content_type) or ""
+        name += mimetypes.guess_extension(content_type.split(";")[0].strip()) or ""
     path = os.path.join(tmp_dir, name)
     with open(path, "wb") as fh:
-        fh.write(response.content)
+        fh.write(content)
     return path

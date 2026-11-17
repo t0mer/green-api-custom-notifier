@@ -150,7 +150,7 @@ The `name` sets the action name: `name: greenapi` creates `notify.greenapi`. You
 | `target` | No | – | Default chat ID (`...@c.us` for a contact, `...@g.us` for a group). Overridden by `target` in the action call. |
 | `title` | No | – | Accepted by the schema but not used by the component; set `title` in the action call instead. |
 | `api_url` | No | Derived from the instance ID | Green-API **apiUrl** from the console, e.g. `https://7105.api.greenapi.com`. |
-| `media_url` | No | Derived from `api_url` (`.api.` → `.media.`) or the instance ID | Green-API **mediaUrl** from the console, used for file uploads. |
+| `media_url` | No | Derived from `api_url` (`api` → `media` in the host name) or the instance ID | Green-API **mediaUrl** from the console, used for file uploads. |
 
 ## Sending a message
 
@@ -191,7 +191,7 @@ To send a message with media, add the following to the `data` parameter:
     ```yaml
     homeassistant:
       allowlist_external_urls:
-        - http://frigate.local:5000
+        - http://frigate.local:5000/   # keep the trailing slash: the check is a prefix match
     ```
 
 The file is uploaded to Green-API and sent to the chat, with the message (including the title, if any) as its caption.
